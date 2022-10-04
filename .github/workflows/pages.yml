@@ -37,11 +37,11 @@ jobs:
         with:
           cache: 'npm'
       - name: Install
-        run: npm ci
+        run: yarn install --frozen-lockfile
       - name: Build
-        run: npm run build
+        run: yarn build
       - name: Test
-        run: npm test
+        run: yarn test
       - name: Upload artifacts
         uses: actions/upload-pages-artifact@v1
         with:
