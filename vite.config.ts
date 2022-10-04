@@ -13,7 +13,7 @@ export default defineConfig({
   build: {
     target: 'esnext',
     rollupOptions: {
-      plugins: [inject({ Buffer: ['Buffer', 'Buffer'] })],
+      plugins: [inject({ Buffer: ['buffer', 'Buffer'] })],
     },
   },
   optimizeDeps: {
