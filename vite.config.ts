@@ -1,8 +1,8 @@
 import { defineConfig } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
-import nodePolyfills from 'rollup-plugin-node-polyfills';
 import NodeGlobalsPolyfillPlugin from '@esbuild-plugins/node-globals-polyfill';
 import NodeModulesPolyfillPlugin from '@esbuild-plugins/node-modules-polyfill';
+import inject from '@rollup/plugin-inject'
 
 export default defineConfig({
   base: '/btcviz/',
@@ -12,6 +12,9 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    rollupOptions: {
+      plugins: [inject({ Buffer: ['Buffer', 'Buffer'] })],
+    },
   },
   optimizeDeps: {
     esbuildOptions: {
