@@ -1,0 +1,34 @@
+.txDimensionsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 5px;
+  margin-bottom: 1em;
+}
+
+.txDimensionsGrid > div > div:first-child {
+  font-weight: bold;
+}
+
+.txDimensionsGrid > div > div:last-child {
+  margin-top: 0.5em;
+}
+
+.txId div:first-child {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
+
+.txId a:link {
+  text-decoration: none;
+}
+
+.txId a:hover {
+  text-decoration: underline;
+}
+
+.txId span {
+  font-weight: bold;
+  padding: 0.2em;
+}
+

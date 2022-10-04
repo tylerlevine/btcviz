@@ -3,16 +3,24 @@
   monospace;
 }
 
-.txInfoTable {
-  border: black 2px solid;
-  border-collapse: collapse;
-  margin-left: auto;
-  margin-right: auto;
+.txInputArea {
+  width: 15%;
 }
 
-.txInfoTable td {
-  border: black 1px dotted;
-  padding: 5px;
+.txInfoSidebox {
+  /*background-color: gray;*/
+  position: fixed;
+  width: 35%;
+}
+
+.txDimensionsSidebar {
+  /*background-color: grey;*/
+  position: fixed;
+  width: 35%;
+}
+
+.txDimensions {
+  margin-top: 1em;
 }
 
 .txDataTable {
@@ -27,70 +35,21 @@
   padding: 5px;
 }
 
-.version {
-  background-color: red;
+.selectedRange {
+  background-color: yellow;
 }
 
-.numInputs {
-  background-color: blue;
+.txDataTable td:not(:first-child):hover {
+  /*border: red 1px solid;*/
+  font-weight: bolder;
 }
 
-.segwitMarker {
-  background-color: orange;
+.txDataTable tr:nth-child(even) td.byteMarker {
+  background-color: rgba(230, 230, 230);
 }
 
-.segwitFlag {
-  background-color: darkorange;
+.txDiagramRow {
+  display: grid;
+  grid-template-columns: 1.05fr 0.9fr 1.05fr;
 }
 
-.vinLen {
-  background-color: aquamarine;
-}
-
-.prevHash {
-  background-color: lavender;
-}
-
-.index {
-  background-color: teal;
-}
-
-.scriptSig {
-  background-color: goldenrod;
-}
-
-.sequence {
-  background-color: rosybrown;
-}
-
-.voutLen {
-  background-color: navajowhite;
-}
-
-.value {
-  background-color: burlywood;
-}
-
-.scriptPubKeyLen {
-  background-color: darkkhaki;
-}
-
-.scriptPubKey {
-  background-color: lightblue;
-}
-
-.programLen {
-  background-color: cornflowerblue;
-}
-
-.programElementLen {
-  background-color: peru;
-}
-
-.programElement {
-  background-color: palegoldenrod;
-}
-
-.locktime {
-  background-color: lightgray;
-}

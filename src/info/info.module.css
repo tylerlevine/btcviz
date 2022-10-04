@@ -1,0 +1,22 @@
+.txInfoValue {
+  overflow-wrap: anywhere;
+}
+
+.txInfoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 5px;
+}
+
+.txInfoGrid > div > div:first-child {
+  font-weight: bold;
+}
+
+.txInfoGrid > div > div:last-child {
+  margin-top: 0.5em;
+}
+
+.txInfoDescription {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}

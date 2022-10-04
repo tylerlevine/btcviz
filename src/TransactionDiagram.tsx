@@ -1,129 +1,110 @@
-import type { Component } from 'solid-js';
+import type { Accessor, Component, Setter, Signal } from 'solid-js';
 import { createEffect, createSignal, For, JSX, Show } from 'solid-js';
 import { hex } from './Hex';
 import styles from './TransactionDiagram.module.css';
 
 import { Transaction } from '@bitgo/bitcoinjs-lib';
-import { AnnotatedTransaction, Annotation } from './AnnotatedTransaction';
+import { AnnotatedTransaction } from './AnnotatedTransaction';
+import { DimensionsTable } from './dimensions';
+import { InfoTable } from './info';
+import { getClassForAnnotation } from './colorscheme';
 
 const BYTES_PER_ROW = 16;
-
-function InfoTable({ tx }: { tx: Transaction }) {
-  return (
-    <>
-      <p>
-        <span class={styles.code}>{tx.getId()}</span>
-      </p>
-      <table class={styles.txInfoTable}>
-        <tbody>
-          <tr>
-            <td>Size (Bytes)</td>
-            <td class={styles.code}>{tx.byteLength()}</td>
-          </tr>
-          <tr>
-            <td>Size (VBytes)</td>
-            <td class={styles.code}>{tx.virtualSize()}</td>
-          </tr>
-          <tr>
-            <td>Size (Weight)</td>
-            <td class={styles.code}>{tx.weight()}</td>
-          </tr>
-        </tbody>
-      </table>
-    </>
-  );
-}
-
-function getClassForAnnotation(annotation: Annotation) {
-  switch (annotation) {
-    case 'version':
-      return styles.version;
-    case 'segwitFlag':
-      return styles.segwitFlag;
-    case 'segwitMarker':
-      return styles.segwitMarker;
-    case 'vinLen':
-      return styles.vinLen;
-    case 'prevHash':
-      return styles.prevHash;
-    case 'index':
-      return styles.index;
-    case 'scriptSig':
-      return styles.scriptSig;
-    case 'sequence':
-      return styles.sequence;
-    case 'voutLen':
-      return styles.voutLen;
-    case 'value':
-      return styles.value;
-    case 'scriptPubKeyLen':
-      return styles.scriptPubKeyLen;
-    case 'scriptPubKey':
-      return styles.scriptPubKey;
-    case 'programLen':
-      return styles.programLen;
-    case 'programElementLen':
-      return styles.programElementLen;
-    case 'programElement':
-      return styles.programElement;
-    case 'locktime':
-      return styles.locktime;
-  }
-}
 
 function Byte({
   byte,
   index,
+  currentlySelectedIndex,
   tx,
+  onMouseOver,
 }: {
   byte: string;
   index: number;
+  currentlySelectedIndex: Accessor<number | undefined>;
   tx: AnnotatedTransaction;
+  onMouseOver: (e: Event) => void;
 }) {
-  function mouseOverByte(e: Event) {
-    if (!(e.target instanceof HTMLTableCellElement)) return;
-    console.log(index, byte, JSON.stringify(tx.getAnnotationForByte(index)));
-  }
-  function computeByteClass() {
+  const [classes, setClasses] = createSignal<string>();
+
+  createEffect(() => {
     const classes = [styles.code];
     try {
-      const annotations = tx.getAnnotationForByte(index).annotations;
-      for (const a of annotations) {
+      const currentIndex = currentlySelectedIndex();
+      if (index === undefined) return;
+      const annotation = tx.getAnnotationForByte(index);
+      for (const a of annotation.annotations) {
         const cls = getClassForAnnotation(a);
         if (cls) {
           classes.push(cls);
         }
       }
+      if (currentIndex !== undefined) {
+        const selectedAnnotation = tx.getAnnotationForByte(currentIndex);
+        if (index === currentIndex) {
+          classes.push(styles.selectedByte);
+          console.log('selected byte is', index);
+        }
+        if (
+          selectedAnnotation.start <= index &&
+          index < selectedAnnotation.end
+        ) {
+          classes.push(styles.selectedRange);
+        }
+      }
     } catch (e) {}
-    return classes.join(' ');
-  }
+    setClasses(classes.join(' '));
+  });
   return (
-    <td
-      class={computeByteClass()}
-      id={`byte-${index}`}
-      onMouseOver={mouseOverByte}
-    >
+    <td class={classes()} id={`byte-${index}`} onMouseOver={onMouseOver}>
       {byte}
     </td>
   );
 }
 
-function DataTable({ tx }: { tx: AnnotatedTransaction }) {
-  const matchRegex = new RegExp(`.{1,${BYTES_PER_ROW * 2}}`, 'g');
+function ByteMarker({ row }: { row: number }) {
+  const classes = [styles.code, styles.byteMarker].join(' ');
   return (
-    <table class={styles.txDataTable}>
+    <td class={classes} id={`byte-marker-row-${row}`}>
+      <span>{'0x' + (row * 16).toString(16).padStart(4, '0')}</span>
+    </td>
+  );
+}
+
+function DataTable({
+  tx,
+  indexAccessor,
+  setIndex,
+}: {
+  tx: AnnotatedTransaction;
+  indexAccessor: Accessor<number | undefined>;
+  setIndex: Setter<number | undefined>;
+}) {
+  const matchRegex = new RegExp(`.{1,${BYTES_PER_ROW * 2}}`, 'g');
+  function getMouseOverFn(byte: string, index: number) {
+    return function (e: Event) {
+      if (!(e.target instanceof HTMLTableCellElement)) return;
+      console.log(index, byte, JSON.stringify(tx.getAnnotationForByte(index)));
+      setIndex(index);
+    };
+  }
+  return (
+    <table class={styles.txDataTable} onMouseOut={() => setIndex(undefined)}>
       <tbody>
         <For each={tx.tx.toHex().match(matchRegex)}>
           {(chunk, row) => {
             return (
               <tr>
+                <ByteMarker row={row()}></ByteMarker>
                 <For each={chunk.match(/.{1,2}/g)}>
                   {(byte, col) => {
+                    const index = row() * BYTES_PER_ROW + col();
                     return (
                       <Byte
                         byte={byte}
-                        index={row() * BYTES_PER_ROW + col()}
+                        index={index}
+                        currentlySelectedIndex={indexAccessor}
                         tx={tx}
+                        onMouseOver={getMouseOverFn(byte, index)}
                       ></Byte>
                     );
                   }}
@@ -138,7 +119,8 @@ function DataTable({ tx }: { tx: AnnotatedTransaction }) {
 }
 
 const TransactionDiagram: Component = () => {
-  const [tx, setTx] = createSignal<Transaction>();
+  const [tx, setTx] = createSignal<AnnotatedTransaction>();
+  const [index, setIndex] = createSignal<number>();
   createEffect(() => {
     const h = hex();
     if (!h) return;
@@ -146,7 +128,7 @@ const TransactionDiagram: Component = () => {
       const t = Transaction.fromHex(h);
       console.log('tx hex:', h);
       console.dir(t);
-      setTx(t);
+      setTx(new AnnotatedTransaction(t));
       return t;
     } catch (e) {
       console.error('could not parse tx');
@@ -154,9 +136,22 @@ const TransactionDiagram: Component = () => {
   });
   return (
     <Show when={tx() !== undefined}>
-      <InfoTable tx={tx()!}></InfoTable>
       <p></p>
-      <DataTable tx={new AnnotatedTransaction(tx()!)}></DataTable>
+      <div class={styles.txDiagramRow}>
+        <div class={styles.txDiagramColumn}>
+          <DimensionsTable tx={tx()!.tx}></DimensionsTable>
+        </div>
+        <div class={styles.txDiagramColumn}>
+          <DataTable
+            tx={tx()!}
+            indexAccessor={index}
+            setIndex={setIndex}
+          ></DataTable>
+        </div>
+        <div class={styles.txDiagramColumn}>
+          <InfoTable tx={tx()!} index={index}></InfoTable>
+        </div>
+      </div>
     </Show>
   );
 };

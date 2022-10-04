@@ -1,5 +1,6 @@
 import { Component, createEffect, createSignal, Show } from 'solid-js';
 import { setHex } from './Hex';
+import styles from './TransactionDiagram.module.css';
 
 const TextArea: Component = () => {
   const [clicked, setClicked] = createSignal(false);
@@ -23,6 +24,7 @@ const TextArea: Component = () => {
   return (
     <>
       <textarea
+        class={styles.txInputArea}
         onClick={() => setClicked(true)}
         onInput={(e) => {
           if (!(e.target instanceof HTMLTextAreaElement)) return;
