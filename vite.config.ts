@@ -5,6 +5,7 @@ import NodeGlobalsPolyfillPlugin from '@esbuild-plugins/node-globals-polyfill';
 import NodeModulesPolyfillPlugin from '@esbuild-plugins/node-modules-polyfill';
 
 export default defineConfig({
+  base: '/btcviz/',
   plugins: [solidPlugin()],
   server: {
     port: 3000,
